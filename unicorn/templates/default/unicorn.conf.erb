@@ -44,10 +44,12 @@ before_fork do |server, worker|
 end
 
 after_fork do |server, worker|
+  <% if node[:unicorn][:establish_connection_after_fork] -%>
   # the following is *required* for Rails + "preload_app true",
   if defined?(ActiveRecord::Base)
     ActiveRecord::Base.establish_connection
   end
+  <% end -%>
 
   # if preload_app is true, then you may also want to check and
   # restart any other shared sockets/descriptors such as Memcached,

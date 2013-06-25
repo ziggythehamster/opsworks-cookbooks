@@ -10,3 +10,4 @@ default[:unicorn][:tcp_nopush] = false
 default[:unicorn][:tries] = 5
 default[:unicorn][:delay] = 0.5
 default[:unicorn][:accept_filter] = "httpready"
+default[:unicorn][:establish_connection_after_fork] = true
