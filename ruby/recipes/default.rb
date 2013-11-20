@@ -2,7 +2,17 @@
 # enables updating stack from ruby 1.9 to ruby 2.0
 # currently we only support one user sapce ruby installation
 
-local_ruby_up_to_date = ::File.exists?("/usr/local/bin/ruby") && system("/usr/local/bin/ruby -v | grep -q '#{node['ruby']['version']}'")
+local_ruby_up_to_date = ::File.exists?(node[:ruby][:executable]) &&
+                        system("#{node[:ruby][:executable]} -v | grep '#{node['ruby']['version']}' > /dev/null 2>&1") &&
+                        system("rpm -qa | grep 'opsworks-ruby' > /dev/null 2>&1")
+
+if local_ruby_up_to_date
+  Chef::Log.info("Userspace Ruby version is #{node['ruby']['version']} - up-to-date")
+elsif !::File.exists?(node[:ruby][:executable])
+  Chef::Log.info("Userspace Ruby version is not #{node['ruby']['version']} - #{node[:ruby][:executable]} does not exist")
+else
+  Chef::Log.info("Userspace Ruby version is not #{node['ruby']['version']} - found #{`#{node[:ruby][:executable]} -v`}")
+end
 
 case node['platform']
 when 'debian','ubuntu'
@@ -15,7 +25,7 @@ when 'debian','ubuntu'
     end
   end
 
-  ['ruby-enterprise','ruby1.9','ruby2.0'].each do |pkg|
+  ['opsworks-ruby1.9','opsworks-ruby2.0','ruby-enterprise','ruby1.9','ruby2.0'].each do |pkg|
     package pkg do
       action :remove
       ignore_failure true
@@ -36,7 +46,7 @@ when 'centos','redhat','fedora','amazon'
     end
   end
 
-  ['ruby-enterprise','ruby19','ruby20'].each do |pkg|
+  ['opsworks-ruby1.9','opsworks-ruby2.0','ruby-enterprise','ruby19','ruby20'].each do |pkg|
     package pkg do
       action :remove
       ignore_failure true
